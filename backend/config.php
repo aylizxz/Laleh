@@ -17,11 +17,24 @@ function env_str(string $key, string $default = ''): string
     return $v !== '' ? $v : $default;
 }
 
+/** First non-empty env var from a list (DB_* for local, MYSQL* for Railway). */
+function env_str_first(array $keys, string $default = ''): string
+{
+    foreach ($keys as $key) {
+        $v = env_str($key, '');
+        if ($v !== '') {
+            return $v;
+        }
+    }
+    return $default;
+}
+
 /* ── Database ─────────────────────────────────────────────────── */
-define('DB_HOST', env_str('DB_HOST', 'localhost'));
-define('DB_NAME', env_str('DB_NAME', 'finesse_db'));
-define('DB_USER', env_str('DB_USER', 'root'));
-define('DB_PASS', env_str('DB_PASS', ''));
+define('DB_HOST', env_str_first(['DB_HOST', 'MYSQLHOST'], 'localhost'));
+define('DB_NAME', env_str_first(['DB_NAME', 'MYSQLDATABASE', 'MYSQL_DATABASE'], 'finesse_db'));
+define('DB_USER', env_str_first(['DB_USER', 'MYSQLUSER'], 'root'));
+define('DB_PASS', env_str_first(['DB_PASS', 'MYSQLPASSWORD'], ''));
+define('DB_PORT', env_str_first(['DB_PORT', 'MYSQLPORT'], '3306'));
 
 // Optional TLS/SSL settings for MySQL (recommended in production).
 define('DB_SSL_CA',   env_str('DB_SSL_CA', ''));     // e.g. C:\path\to\ca.pem
